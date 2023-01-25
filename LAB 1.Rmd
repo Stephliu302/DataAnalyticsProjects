@@ -1,0 +1,234 @@
+---
+title: "Lab 1"
+author: "Stephanie Liu"
+date: September 26, 2021
+output:
+  prettydoc::html_pretty:
+    theme: hpstr
+    highlight: vignette
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, message=FALSE}
+setwd("~/Documents/Documents - Stephanie’s MacBook Pro/MSBA/GSE 524 Computing and Machine Learning for Economics /GSE 524")
+
+library(tidyverse)
+library(here)
+library(prettydoc)
+```
+
+
+**Task 1**
+
+*Below is a plot of a visualization in Gapminder (the default/starting one actually). Look it over and take note of the variables being visualized.*
+
+![Figure 1](Gapminder Task 1.png)
+
+The variable `Income` is on the x-axis, and the variable `Life expectancy` is on the y-axis. Each bubble represents a country. Population and region are also recorded in the size and color, respectively.
+
+**1.** *Identify, and list here, what aesthetics are being used and which variables are being mapped to each aesthetic.*
+
+Color and size are two aesthetics being used. Color denotes which world region each country belongs to. For example, the countries in green are from North and South America. Size denotes the population in that country. For example, the larger red bubbles represent Asian countries with larger populations. 
+
+**2.** *Import the q1data.csv dataset.*
+
+```{r, message=FALSE}
+q1data <- read_csv(here("Data", "q1data.csv"))
+```
+
+
+**3.** *Recreate the plot as best you can using ggplot.*
+
+```{r, message=FALSE, warning=FALSE}
+
+q1data %>% 
+  ggplot(aes(x = income, y = life_exp, color = four_regions, size = as.numeric(population))) +
+  geom_point(alpha = 0.8) +
+  scale_color_manual(breaks = c("asia", "europe", "africa", "americas"), values = c("red", "yellow", "turquoise", "green")) +
+  xlim(500, 70000) +
+  ylim(20, 90) +
+  scale_x_continuous(trans = "log2") +
+  scale_size(range = c(0, 15)) +
+  xlab("Income") +
+  ylab("Life expectancy")
+
+```
+
+
+**4.** *What other geometries could you use here besides geom_point? Provide an actual plot of another geometry being used here and why it’s good or bad for visualizing these data.*
+
+
+You can also use a line plot, or a violin plot (or really any plot for two quantitative variables).
+
+
+```{r, warning=FALSE}
+
+q1data %>% 
+  ggplot(aes(x = income, y = life_exp, color = four_regions, size = as.numeric(population))) +
+  geom_line() +
+  scale_x_continuous(trans = "log2") +
+  xlab("Income") +
+  ylab("Life expectancy")
+
+q1data %>% 
+  ggplot(aes(x = income, y = life_exp, color = four_regions, size = as.numeric(population))) +
+  geom_violin() +
+  scale_x_continuous(trans = "log2") +
+  xlab("Income") +
+  ylab("Life expectancy")
+```
+
+Notice that these plots do not do a good job representing the data. It is harder to see the distribution of the data and the relationship between the variables. The geom_point() function best shows the relationship between income and life expectancy (both continuous quantitative variables), as well as the population (quantitative) and region (categorical) for each country. 
+
+
+**Task 2**
+
+*Below is another plot of a visualization in Gapminder. Look it over and take note of the variables being visualized.*
+
+![Figure 2](Gapminder Task 2.png)
+
+The variable `Exports(% of GDP)` is on the x-axis, and the variable `Imports (% of GDP)` is on the y-axis. Each bubble represents a country. Energy use and region are also displayed in size and color.
+
+
+**1.** *Identify, and list here, what aesthetics are being used and which variables are being mapped to each aesthetic.*
+
+
+Similar to before, the aesthetics being used are color and size. Color denotes the world region each country is in, and size denotes the energy use of that country.
+On the x-axis is the variable "Exports (\% of GDP)", and on the y-axis is the variable "Imports (\% of GDP)". 
+
+
+**2.** *Import the q2data.csv dataset.*
+
+```{r, message=FALSE}
+q2data <- read_csv(here("Data", "q2data.csv"))
+```
+
+
+**3.** *Recreate the plot as best you can using ggplot.*
+
+```{r, message = FALSE, warning=FALSE}
+
+q2data %>% 
+  ggplot(aes(x = exports, y = imports, color = four_regions, size = as.numeric(energy))) +
+  geom_point(alpha = 0.8) +
+    scale_color_manual(breaks = c("asia", "europe", "africa", "americas"), values = c("red", "yellow", "turquoise", "green")) +
+  xlim(0, 220) +
+  ylim(0, 400) +
+   scale_size(range = c(0, 10)) +
+  xlab("Exports (% of GDP)") +
+  ylab("Imports (% of GDP)")
+```
+
+**4.** *What other geometries could you use here besides geom_point? Provide an actual plot of another geometry being used here and why it’s good or bad for visualizing these data.*
+
+Similar to task 1, you can also use a line plot, or a violin plot (or any plot for two quantitative variables).
+
+
+```{r, message = FALSE, warning=FALSE}
+q2data %>% 
+  ggplot(aes(x = exports, y = imports, fill = four_regions, size = as.numeric(energy))) +
+  geom_violin() +
+    scale_color_manual(breaks = c("asia", "europe", "africa", "americas"), values = c("red", "yellow", "turquoise", "green")) +
+  xlab("Exports (% of GDP)") +
+  ylab("Imports (% of GDP)")
+```
+
+Notice, however, that this plot does not sufficiently represent the data. It is harder to see the overall distribution of the data in the violin plot than in the scatterplot. The geom_point() function best shows the relationship between exports and imports (quantitative), as well as the energy use (quantitative, numeric) and region (categorical) for each country. 
+
+
+**Task 3**
+
+*Below is a final plot of a visualization in Gapminder. Look it over and take note of the variables being visualized.*
+
+![Figure 3](Gapminder Task 3.png)
+
+The variable `Individuals using the internet` is on the x-axis, and the variable `GDP/capita` is on the y-axis. Each bubble represents a country. Income and region are also displayed in the size and color of each bubble.
+
+
+**1.** *Identify, and list here, what aesthetics are being used and which variables are being mapped to each aesthetic.*
+
+The aesthetics being used are color and size. Color denotes the world region each country is in (out of 4 main regions), and size denotes income of that country.
+On the x-axis is the variable "Individuals using the internet", and on the y-axis is the variable "GDP/capita". 
+
+
+**2.** *Import the q3data.csv dataset.*
+
+```{r, message=FALSE}
+q3data <- read_csv(here("Data", "q3data.csv"))
+```
+
+
+**3.** *Recreate the plot as best you can using ggplot.*
+
+
+```{r, message=FALSE, warning=FALSE}
+
+q3data %>% 
+  ggplot(aes(x = internet_users, y = gdp, color = four_regions, size = as.numeric(income))) +
+  geom_point(alpha = 0.8) +
+  scale_color_manual(breaks = c("asia", "europe", "africa", "americas"), values = c("red", "yellow", "turquoise", "green")) +
+  xlim(0, 90) +
+  ylim(0, 110000) + 
+  scale_y_continuous(trans = "log2") +
+   scale_size(range = c(0, 10)) +
+  xlab("Individuals using the internet") +
+  ylab("GDP/capita")
+```
+
+**4.** *What other geometries could you use here besides geom_point? Provide an actual plot of another geometry being used here and why it’s good or bad for visualizing these data.*
+
+
+Again like Tasks 1 and 2, you can also use a line plot, or a violin plot (or any plot for two quantitative variables).
+
+```{r, warning=FALSE}
+q3data %>% 
+  ggplot(aes(x = internet_users, y = gdp, fill = four_regions, size = as.numeric(income))) +
+  geom_violin() +
+  scale_color_manual(breaks = c("asia", "europe", "africa", "americas"), values = c("red", "yellow", "turquoise", "green")) +
+  scale_y_continuous(trans = "log2") +
+  xlab("Individuals using the internet") +
+  ylab("GDP/capita")
+```
+
+Again, notice that these plots do not well represent the data. The geom_point() function best shows the relationship between the number of internet users and GDP per capita (quantitative), as well as the income (quantitative/continuous) and region (categorical) for each country.
+
+
+**Challenge Points**
+
+*For one of the Tasks above, create a visualization using the same variables but map them to different aesthetics than you used above (originally). Then answer the following questions:
+Is this new graph better or worse than the original? Why?*
+
+
+Let's recreate a graph for Task 2:
+
+```{r, message = FALSE, warning=FALSE}
+q2data %>% 
+  ggplot() +
+  geom_point(aes(x = exports, y = imports, shape = four_regions, alpha = as.numeric(energy)), color = "blue") +
+  xlim(0, 200) +
+  ylim(0, 160) +
+  xlab("Exports (% of GDP)") +
+  ylab("Imports (% of GDP)")
+```
+
+I think the original graph is better. It is easier to distinguish each region by color rather than by shape. Similarly, it is easier to distinguish the amount of energy usage in each country by the size of the points rather than the transparency of the points. 
+
+
+*For each aesthetic used, write down your best, general advice on what kinds of variables or data would be best displayed using that aesthetic. Try to be as thoughtful and rich as possible. For example, color may seem like it is well suited for a categorical variable, but color gradients can be used well for continuous variables. If it helps, try to think not only of the computing aspects but the business/communication/marketing aspects as well.*
+
+
+- *Color* : This may be best for categorical variables (such as the region variables). However for a wide range of colors (and not just a select four, like we did for region), mapping a continuous variable to the color aesthetic could display an entire array of colors on the spectrum. 
+
+- *Size* : This may be best used for quantitative variables (preferably integers), or even categorical variables, if you wish to display the data by grouping by different categories. For example, you could map the region variable to size (and assign each region category to an integer), so that each region has a different size. 
+
+- *Shape* : This seems to be best used for categorical variables. That way each category will be assigned to a different shape. 
+
+- *Alpha* : The transparency aesthetic may be used for either categorical or quantitative variables. If used with categorical variables, we would most likely assign an integer to each category and map that integer/category to an alpha level. For continuous, quantitative variables, we would be able to display a range of transparency levels, similar to the range of colors described above. 
+
+
+
+
+
