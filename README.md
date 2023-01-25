@@ -5,6 +5,6 @@ This Project contains relevant documents that showcase my technical experience. 
 
 - SQL code from the projects in Khan Academy's "Intro to SQL" course. 
 - Python code from projects in machine learning. 
-- R Code from projects in statistical modeling and machine learning. 
+- R Code from projects in data mining and statistical modeling (in html format). 
 
 
