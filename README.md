@@ -1,4 +1,4 @@
-Data Analytics Projects
+# Data Analytics Projects
 
 This Repository contains relevant documents that showcase my technical experience. It includes the following:
 
