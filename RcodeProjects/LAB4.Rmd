@@ -1,0 +1,655 @@
+---
+title: 'Lab 4: Webscraping and Data Wrangling'
+author: "Stephanie Liu"
+date: "10/17/2021"
+output:
+  prettydoc::html_pretty:
+    theme: hpstr
+    highlight: vignette
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r, message=FALSE}
+library(tidyverse)
+library(readr)
+library(rvest)
+library(xml2)
+library(stringr)
+
+options(scipen = 99)
+```
+
+# Coffee Lovers Unite!
+
+**If caffeine is one of the most popular drugs, then coffee is likely one of the most popular delivery systems for it. Aside from caffeine, people enjoy the wonderful variety of coffee-related drinks. Let’s do a rough investigation of the “market share” by some of the top coffee chains in the United States!**
+
+**The menuism.com website provides a great collection of data on store locations and chain prevalence. Check out [this page](https://www.menuism.com/restaurant-locations/starbucks-coffee-39564) for the Starbucks Coffee locations in the United States. Notice that this page only really gives the name of the state and the number of locations in that state. A similarly formatted page is available for many other coffee chains.**
+
+## Scrape the Location Counts
+
+**1. Use the `rvest` package to scrape the data (from menuism.com like the link above) on state names and corresponding number of store locations, for the following chains:**
+
+Starbucks
+
+```{r}
+sbuxurl<- "https://www.menuism.com/restaurant-locations/starbucks-coffee-39564"
+
+sbuxlink <- read_html(sbuxurl)
+
+sbuxhtml <- html_nodes(sbuxlink, css=".list-unstyled-links a")
+sbuxtext <- html_text(sbuxhtml) 
+
+sbuxtext <- sbuxtext[1:51]
+
+sbuxtext <- sbuxtext %>% 
+  str_remove_all("Starbucks Coffee locations")
+
+```
+
+```{r}
+sbuxdf <- data.frame(Restaurant = "Starbucks", state = sbuxtext) %>% 
+  separate(state, c("State", "Number_of_Locations"), sep = "  \\(")
+
+sbuxdf <- sbuxdf %>% 
+  mutate(Number_of_Locations = str_remove(Number_of_Locations, "\\)"))
+
+sbuxdf <- sbuxdf %>% 
+  mutate(Number_of_Locations = as.numeric(Number_of_Locations))
+
+# sbuxdf <- sbuxdf %>% 
+#   filter(State != "District of Columbia")
+
+sbuxdf %>% 
+    arrange(desc(Number_of_Locations))
+```
+
+Dunkin’ Donuts
+
+```{r}
+ddurl <- "https://www.menuism.com/restaurant-locations/dunkin-donuts-181624"
+
+ddlink <- read_html(ddurl)
+
+ddhtml <- html_nodes(ddlink, css=".list-unstyled-links a")
+ddtext <- html_text(ddhtml) 
+
+ddtext <- ddtext[1:45]
+
+ddtext <- ddtext %>% 
+  str_remove_all(" Dunkin' Donuts locations ")
+```
+
+```{r}
+dddf <- data.frame(Restaurant = "Dunkin' Donuts", state = ddtext) %>% 
+  separate(state, c("State", "Number_of_Locations"), sep = "\\(")
+
+dddf <- dddf %>% 
+  mutate(Number_of_Locations = str_remove(Number_of_Locations, "\\)"))
+
+dddf <- dddf %>% 
+  mutate(Number_of_Locations = as.numeric(Number_of_Locations))
+
+dddf %>% 
+    arrange(desc(Number_of_Locations))
+```
+
+
+
+Peet’s Coffee & Tea
+
+```{r}
+peetsurl <- "https://www.menuism.com/restaurant-locations/peets-coffee-tea-84051"
+
+peetslink <- read_html(peetsurl)
+
+peetshtml <- html_nodes(peetslink, css=".list-unstyled-links a")
+peetstext <- html_text(peetshtml) 
+
+peetstext <- peetstext[1:9]
+
+peetstext <- peetstext %>%
+  str_remove_all(" Peet's Coffee & Tea locations ")
+```
+
+```{r}
+peetsdf <- data.frame(Restaurant = "Peet's Coffee & Tea", state = peetstext) %>% 
+  separate(state, c("State", "Number_of_Locations"), sep = "\\(")
+
+peetsdf <- peetsdf %>% 
+  mutate(Number_of_Locations = str_remove(Number_of_Locations, "\\)"))
+
+peetsdf <- peetsdf %>% 
+  mutate(Number_of_Locations = as.numeric(Number_of_Locations))
+
+peetsdf %>% 
+    arrange(desc(Number_of_Locations))
+```
+
+Tim Horton’s
+
+```{r}
+THurl <- "https://www.menuism.com/restaurant-locations/tim-hortons-190025"
+
+THlink <- read_html(THurl)
+
+THhtml <- html_nodes(THlink, css=".list-unstyled-links a")
+THtext <- html_text(THhtml) 
+
+THtext <- THtext[1:15]
+
+THtext <- THtext %>%
+  str_remove_all(" Tim Hortons locations ")
+```
+
+```{r}
+THdf <- data.frame(Restaurant = "Tim Horton's", state = THtext) %>% 
+  separate(state, c("State", "Number_of_Locations"), sep = "\\(")
+
+THdf <- THdf %>% 
+  mutate(Number_of_Locations = str_remove(Number_of_Locations, "\\)"))
+
+THdf <- THdf %>% 
+  mutate(Number_of_Locations = as.numeric(Number_of_Locations))
+
+THdf %>% 
+    arrange(desc(Number_of_Locations))
+```
+
+Panera Bread
+
+```{r}
+paneraurl <- "https://www.menuism.com/restaurant-locations/panera-bread-4258"
+
+paneralink <- read_html(paneraurl)
+
+panerahtml <- html_nodes(paneralink, css=".list-unstyled-links a")
+paneratext <- html_text(panerahtml) 
+
+paneratext <- paneratext[1:46]
+
+paneratext <- paneratext %>%
+  str_remove_all(" Panera Bread locations ")
+```
+
+```{r}
+paneradf <- data.frame(Restaurant = "Panera Bread", state = paneratext) %>% 
+  separate(state, c("State", "Number_of_Locations"), sep = "\\(")
+
+paneradf <- paneradf %>% 
+  mutate(Number_of_Locations = str_remove(Number_of_Locations, "\\)"))
+
+paneradf <- paneradf %>% 
+  mutate(Number_of_Locations = as.numeric(Number_of_Locations))
+
+paneradf %>% 
+    arrange(desc(Number_of_Locations))
+```
+Caribou Coffee
+
+```{r}
+ccurl <- "https://www.menuism.com/restaurant-locations/caribou-coffee-164861"
+
+cclink <- read_html(ccurl)
+
+cchtml <- html_nodes(cclink, css=".list-unstyled-links a")
+cctext <- html_text(cchtml) 
+
+cctext <- cctext %>% 
+  str_remove_all(" Caribou Coffee locations ")
+
+```
+
+```{r}
+ccdf <- data.frame(Restaurant = "Caribou Coffee", state = cctext) %>% 
+  separate(state, c("State", "Number_of_Locations"), sep = "\\(")
+
+ccdf <- ccdf %>% 
+  mutate(Number_of_Locations = str_remove(Number_of_Locations, "\\)"))
+
+ccdf <- ccdf %>% 
+  mutate(Number_of_Locations = as.numeric(Number_of_Locations))
+
+ccdf %>% 
+  arrange(desc(Number_of_Locations))
+```
+
+Au Bon Pain
+
+```{r}
+abpurl <- "https://www.menuism.com/restaurant-locations/au-bon-pain-69342"
+
+abplink <- read_html(abpurl)
+
+abphtml <- html_nodes(abplink, css=".list-unstyled-links a")
+abptext <- html_text(abphtml) 
+
+abptext <- abptext %>% 
+  str_remove_all(" Au Bon Pain locations ")
+
+```
+
+```{r}
+abpdf <- data.frame(Restaurant = "Au Bon Pain", state = abptext) %>% 
+  separate(state, c("State", "Number_of_Locations"), sep = "\\(")
+
+abpdf <- abpdf %>% 
+  mutate(Number_of_Locations = str_remove(Number_of_Locations, "\\)"))
+
+abpdf <- abpdf %>% 
+  mutate(Number_of_Locations = as.numeric(Number_of_Locations))
+
+abpdf %>% 
+  arrange(desc(Number_of_Locations))
+```
+
+The Coffee Bean & Tea Leaf
+
+```{r}
+cburl <- "https://www.menuism.com/restaurant-locations/the-coffee-bean-tea-leaf-165988"
+
+cblink <- read_html(cburl)
+
+cbhtml <- html_nodes(cblink, css=".list-unstyled-links a")
+cbtext <- html_text(cbhtml) 
+
+cbtext <- cbtext %>% 
+  str_remove_all(" The Coffee Bean & Tea Leaf locations ")
+
+```
+
+```{r}
+cbdf <- data.frame(Restaurant = "The Coffee Bean & Tea Leaf", state = cbtext) %>% 
+  separate(state, c("State", "Number_of_Locations"), sep = "\\(")
+
+cbdf <- cbdf %>% 
+  mutate(Number_of_Locations = str_remove(Number_of_Locations, "\\)"))
+
+cbdf <- cbdf %>% 
+  mutate(Number_of_Locations = as.numeric(Number_of_Locations))
+
+cbdf %>% 
+  arrange(desc(Number_of_Locations))
+```
+
+
+McDonald’s
+
+```{r}
+mdurl <- "https://www.menuism.com/restaurant-locations/mcdonalds-21019"
+
+mdlink <- read_html(mdurl)
+
+mdhtml <- html_nodes(mdlink, css=".list-unstyled-links a")
+mdtext <- html_text(mdhtml) 
+
+
+mdtext <- mdtext[1:51]
+
+mdtext <- mdtext %>% 
+  str_remove_all(" McDonald's locations ")
+```
+
+```{r}
+mddf <- data.frame(Restaurant = "McDonald's", state = mdtext) %>% 
+  separate(state, c("State", "Number_of_Locations"), sep = "\\(")
+
+mddf <- mddf %>% 
+  mutate(Number_of_Locations = str_remove(Number_of_Locations, "\\)"))
+
+mddf <- mddf %>% 
+  mutate(Number_of_Locations = as.numeric(Number_of_Locations))
+
+mddf %>% 
+  arrange(desc(Number_of_Locations))
+```
+
+
+
+**2. Write a function `stateabb()` that takes a state name (assume it’s spelled correctly) and converts it to its state abbreviation. This can be a very simple function.**
+
+```{r}
+# note that state.abb is a character vector in r that has two-letter abbreviations for the state names
+# state.name is a character vector with the full state names
+
+stateabb <- function(state){
+  abb <- state.abb[match(state, state.name)]
+  return(abb)
+}
+
+```
+
+
+**3. Parse, merge and tidy your data so that you have a row for each state and two columns: state abbrevation, location count.**
+
+Starbucks 
+
+```{r}
+#Starbucks
+sbuxdf <- sbuxdf %>% 
+  mutate(abb = stateabb(State))
+head(sbuxdf %>% 
+  arrange(desc(Number_of_Locations)))
+
+#Dunkin' Donuts
+dddf <- dddf %>% 
+  mutate(abb = stateabb(State))
+head(dddf %>% 
+  arrange(desc(Number_of_Locations)))
+
+#Peet's Coffee
+peetsdf <- peetsdf %>% 
+  mutate(abb = stateabb(State))
+head(peetsdf %>% 
+  arrange(desc(Number_of_Locations)))
+
+#Tim Horton's
+THdf <- THdf %>% 
+  mutate(abb = stateabb(State))
+head(THdf %>% 
+  arrange(desc(Number_of_Locations)))
+
+#Panera Bread
+paneradf <- paneradf %>% 
+  mutate(abb = stateabb(State))
+head(paneradf %>% 
+  arrange(desc(Number_of_Locations)))
+
+#Caribou Coffee
+ccdf <- ccdf %>% 
+  mutate(abb = stateabb(State))
+head(ccdf %>% 
+  arrange(desc(Number_of_Locations)))
+
+#Au Bon Pain
+abpdf <- abpdf %>% 
+  mutate(abb = stateabb(State))
+head(abpdf %>% 
+  arrange(desc(Number_of_Locations)))
+
+#The Coffee Bean & Tea Leaf
+cbdf <- cbdf %>% 
+  mutate(abb = stateabb(State))
+head(cbdf %>% 
+  arrange(desc(Number_of_Locations)))
+
+#McDonald's
+mddf <- mddf %>% 
+  mutate(abb = stateabb(State))
+head(mddf %>% 
+  arrange(desc(Number_of_Locations)))
+
+```
+
+
+Let's merge these all into one table:
+
+```{r}
+all_stores_df <- full_join(sbuxdf, dddf) %>% 
+  full_join(., peetsdf) %>% 
+  full_join(., THdf) %>% 
+  full_join(., paneradf) %>% 
+  full_join(., ccdf) %>% 
+  full_join(., abpdf) %>% 
+  full_join(., cbdf) %>% 
+  full_join(., mddf)
+
+# Note that we can get rid of District of Columbia, because it is technically not a state
+all_stores_df <- all_stores_df %>% 
+  na.omit()
+
+head(all_stores_df) 
+```
+
+
+
+## Supplemental Data
+
+**4. Scrape the state names and populations from this [wikipedia page](https://simple.wikipedia.org/wiki/List_of_U.S._states_by_population). Convert the state names to abbreviations and merge these data with your coffee dataset.**
+
+```{r}
+statepopurl<- "https://simple.wikipedia.org/wiki/List_of_U.S._states_by_population"
+
+statepoplink <- read_html(statepopurl)
+
+statepophtml <- html_nodes(statepoplink, css="td:nth-child(4) , .flagicon+ a")
+statepoptext <- html_text(statepophtml) 
+
+```
+
+
+```{r}
+statepop_df <- data.frame(
+  State = statepoptext[seq(from = 1, to = 104, by = 2)],
+  Population = statepoptext[seq(from = 2, to = 104, by = 2)])
+
+statepop_df <- statepop_df %>% 
+  mutate(Population = str_remove(Population, "\n")) %>% 
+  mutate(Population = str_remove_all(Population, ",")) %>% 
+  mutate(Population = as.numeric(Population))
+
+statepop_df <- statepop_df %>% 
+  mutate(abb = stateabb(State))
+
+statepop_df <- statepop_df %>% 
+  na.omit()
+```
+
+
+```{r}
+stores_and_pop_df <- full_join(all_stores_df, statepop_df) 
+head(stores_and_pop_df)
+```
+
+
+**5. Find the revenue, stock price, or your financial metric of choice for each of the companies listed above (if you can find a website to scrape these from that’s great!…but it’s okay if you manually enter these into R). Merge these values into your big dataset. Note: these values may be repeated for each state.**
+
+
+Since each company uses a different page, I manually imported the information into my dataset.
+I am only reporting the annual revenue for each company from 2019 (I was not able to find revenue from 2020 for all companies). Note that some of these are estimates, because I wasn't able to find updated information for each company. 
+
+**Annual Revenue (2019)**
+
+Starbucks - 26.509 billion (26,509,000,000)
+
+Dunkin’ Donuts - 1.37 billion (1,370,000,000)
+
+Peet’s Coffee & Tea - 983 million (983,000,000)
+
+Tim Horton’s - 3.5 billion (3,500,000,000)
+
+Panera Bread - 5.9 billion (5,900,000,000)
+
+Caribou Coffee - 300 million (300,000,000)
+
+Au Bon Pain - 296.6 million (296,600,000)
+
+The Coffee Bean & Tea Leaf - 292 million (292,000,000)
+
+McDonald’s - 19.21 billion (19,210,000,000)
+
+
+
+```{r}
+rev_df <- stores_and_pop_df %>% 
+  mutate(annual_rev = case_when(
+    Restaurant == "Starbucks" ~ 26509000000,
+    Restaurant == "Dunkin' Donuts" ~ 1370000000,
+    Restaurant == "Peet's Coffee & Tea" ~ 983000000,
+    Restaurant == "Tim Horton's" ~ 3500000000,
+    Restaurant == "Panera Bread" ~ 5900000000,
+    Restaurant == "Caribou Coffee" ~ 300000000,
+    Restaurant == "Au Bon Pain" ~ 296600000,
+    Restaurant == "The Coffee Bean & Tea Leaf" ~ 292000000,
+    Restaurant == "McDonald's" ~ 19210000000))
+
+head(rev_df)
+
+```
+
+
+**6. Create a region variable in your dataset according to the scheme on [this wikipedia page](https://en.wikipedia.org/wiki/List_of_regions_of_the_United_States): Northeast, Midwest, South, West. You do not need to scrape this information.**
+
+Northeast - Connecticut, Maine, Massachusetts, New Hampshire, Rhode Island, Vermont, New Jersey, New York, and Pennsylvania
+
+Midwest - Illinois, Indiana, Michigan, Ohio, Wisconsin, Iowa, Kansas, Minnesota, Missouri, Nebraska, North Dakota, and South Dakota
+
+South - Delaware, Florida, Georgia, Maryland, North Carolina, South Carolina, Virginia, West Virginia, Alabama, Kentucky, Mississippi, Tennessee, Arkansas, Louisiana, Oklahoma, and Texas
+
+West - Arizona, Colorado, Idaho, Montana, Nevada, New Mexico, Utah, Wyoming, Alaska, California, Hawaii, Oregon, and Washington
+
+
+```{r}
+region_df <- rev_df %>% 
+  mutate(Region = case_when(
+    State %in% c("Connecticut", "Maine", "Massachusetts", "New Hampshire", "Rhode Island", "Vermont", "New Jersey", "New York", "Pennsylvania") ~ "Northeast",
+    State %in% c("Illinois", "Indiana", "Michigan", "Ohio", "Wisconsin", "Iowa", "Kansas", "Minnesota", "Missouri", "Nebraska", "North Dakota", "South Dakota") ~ "Midwest",
+    State %in% c("Delaware", "Florida", "Georgia", "Maryland", "North Carolina", "South Carolina", "Virginia", "West Virginia", "Alabama", "Kentucky", "Mississippi", "Tennessee", "Arkansas", "Louisiana", "Oklahoma", "Texas") ~ "South",
+    State %in% c("Arizona", "Colorado", "Idaho", "Montana", "Nevada", "New Mexico", "Utah", "Wyoming", "Alaska", "California", "Hawaii", "Oregon", "Washington") ~ "West"
+  ))
+
+head(region_df)
+```
+
+
+
+## Analyze
+
+**7. Assess and comment on the prevalence of each chain. Some questions to consider (you don’t need to answer all of these and you may come up with your own):**
+
+
+- **Are some of these chains more prevalent in certain states than others? Possibly despite having less stores overall? Same questions for regions instead of states.**
+
+```{r}
+# here are the overall number of locations for each chain
+region_df %>% 
+  group_by(Restaurant) %>% 
+  summarise(total_loc = sum(Number_of_Locations)) %>% 
+  arrange(desc(total_loc))
+  
+```
+
+
+
+```{r}
+state_prevalence <- region_df %>% 
+  mutate(perc_loc_state = case_when(
+    Restaurant == "McDonald's" ~ Number_of_Locations/16744,
+    Restaurant == "Starbucks" ~ Number_of_Locations/10222,
+    Restaurant == "Dunkin' Donuts" ~ Number_of_Locations/6466,
+    Restaurant == "Panera Bread" ~ Number_of_Locations/2374,
+    Restaurant == "Caribou Coffee" ~ Number_of_Locations/615,
+    Restaurant == "Tim Horton's" ~ Number_of_Locations/493,
+    Restaurant == "Au Bon Pain" ~ Number_of_Locations/311,
+    Restaurant == "The Coffee Bean & Tea Leaf" ~ Number_of_Locations/248,
+    Restaurant == "Peet's Coffee & Tea" ~ Number_of_Locations/197))
+
+  head(state_prevalence %>% 
+    select(Restaurant, State, Number_of_Locations, perc_loc_state) %>% 
+    arrange(desc(perc_loc_state)), 20)
+
+```
+**Peet's Coffee** has more of its locations in *California* than other states, but only has 197 locations in the US.
+
+The same is for **The Coffee Bean & Tea Leaf**, which is primarily in *California*, but has only 248 total locations in the US.
+
+**Caribou Coffee** has about half of its 615 total locations in *Minnesota*. 
+
+**Starbucks** has about a quarter of its 10222 total US locations in *California*.
+
+**Au Bon Pain** has about 21% of its 311 total US locations in *Massachusetts*, and about 18% in *New York*. 
+
+**Tim Horton's** has more locations in *Ohio* and *New York* than in the other 50 states.
+
+**Dunkin' Donuts** has about 17% of its 6466 total US locations in *Massachusetts*, and about 15% in *New York*. 
+
+While **McDonald's** has the most US locations, they seem to be fairly spread out across the states, with the most locations in California (~10%). 
+
+
+```{r}
+region_df %>% 
+  select(Restaurant, State, Number_of_Locations, Region) %>% 
+  group_by(Region, Restaurant) %>% 
+  summarise(total_loc_region = sum(Number_of_Locations)) %>% 
+  arrange(desc(total_loc_region))
+```
+
+For **McDonald's**, the South has the most locations (6606 out of 16744).
+
+For **Starbucks**, the West has the most locations (4414 out of 10222).
+
+For **Dunkin' Donuts**, the Northeast has the most locations (3871 out of 6466).
+
+For **Panera Bread**, the South has the most locations, followed shortly by the Midwest (805 and 748 out of 2374).
+
+For **Caribou Coffee**, the Midwest has the most locations (520 out of 615). 
+
+For **Tim Horton's**, the Midwest has the most locations (309 out of 493).
+
+For **The Coffee Bean & Tea Leaf**, the West has the most locations (239 out of 248).
+
+For **Peet's Coffee & Tea**, the West has the most locations (190 out of 197).
+
+For **Au Bon Pain**, the Northeast has the most locations (184 out of 311).
+
+
+
+
+
+- **Does the distribution of each chain’s stores match population distribution, by both state/region?**
+
+```{r}
+head(state_prevalence %>% 
+  select(Restaurant, State, Population, perc_loc_state, Number_of_Locations) %>% 
+  arrange(desc(Population)), 30)
+
+tail(state_prevalence %>% 
+  select(Restaurant, State, Population, perc_loc_state, Number_of_Locations) %>% 
+  arrange(desc(Population)), 20)
+```
+
+For some chains the store distribution and population match. For example, Starbucks, Peet's Coffee, Panera Bread, McDonald's and The Coffee Bean & Tea Leaf all have a good portion of their stores in California, the most populated state. 
+
+However, Dunkin' Donuts has less than 1% of its stores in California, even though the state is highly populated. (We can see that Dunkin' Donuts actually has more of its locations on the East Coast, in Florida and New York, the third and fourth most populated states.)
+
+Even though Texas is the second most populated state, most chains do not have a lot of their locations there. 
+
+
+In the least populated states like Alaska, Vermont, Wyoming, and the Dakotas, all of the chains have only a small percentage of locations in those states. 
+
+
+
+
+- **Do the financial data match what you’d expect based on the number and locations of the stores? Why or why not?**
+
+Recall the total number of locations for each chain:
+
+```{r}
+# here are the overall number of locations for each chain
+region_df %>% 
+  group_by(Restaurant) %>% 
+  summarise(total_loc = sum(Number_of_Locations)) %>% 
+  arrange(desc(total_loc))
+  
+```
+
+```{r}
+region_df %>% 
+  group_by(Restaurant) %>% 
+  summarise(avg_annual_rev = mean(annual_rev)) %>% 
+  arrange(desc(avg_annual_rev))
+  
+```
+
+Yes, it makes sense that Starbucks and McDonald's have the highest annual revenue, since they also have the most number of stores in the US. In addition, the majority of their stores are in California, which has a large population. 
+
+While Panera Bread doesn't have nearly as many stores as Starbucks and McDonald's, they still have quite a few stores in the US, particularly in California. It would make sense then that their annual revenue is pretty high. 
+
+The annual revenue for Tim Horton's and Peet's Coffee may be the most surprising, given how few locations they have across the US. However, Tim Horton's has many of its locations in New York, which is highly populated, and Peet's Coffee has many of its locations in California. This could be one reason for their higher than expected revenues. 
+
+
